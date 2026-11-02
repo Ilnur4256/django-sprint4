@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
+from .constants import ADMIN_IMAGE_THUMB_WIDTH
 from .models import Category, Comment, Location, Post
 
 
@@ -22,6 +24,7 @@ class LocationAdmin(admin.ModelAdmin):
 class PostAdmin(admin.ModelAdmin):
     list_display = (
         'title',
+        'image_preview',
         'author',
         'category',
         'location',
@@ -32,6 +35,28 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ('is_published', 'category', 'location')
     search_fields = ('title', 'text')
     date_hierarchy = 'pub_date'
+    readonly_fields = ('image_preview', 'created_at')
+    fieldsets = (
+        ('Содержание', {
+            'fields': ('title', 'text', 'image', 'image_preview'),
+        }),
+        ('Привязки', {
+            'fields': ('author', 'category', 'location'),
+        }),
+        ('Публикация', {
+            'fields': ('pub_date', 'is_published', 'created_at'),
+        }),
+    )
+
+    @admin.display(description='Изображение')
+    def image_preview(self, post):
+        if post.image:
+            return format_html(
+                '<img src="{}" width="{}">',
+                post.image.url,
+                ADMIN_IMAGE_THUMB_WIDTH,
+            )
+        return '—'
 
 
 @admin.register(Comment)

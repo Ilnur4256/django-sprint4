@@ -1,11 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
+
+from .constants import (
+    LOCATION_NAME_MAX_LENGTH,
+    STR_DISPLAY_LENGTH,
+    TITLE_MAX_LENGTH,
+)
 
 User = get_user_model()
-
-TITLE_MAX_LENGTH = 256
-LOCATION_NAME_MAX_LENGTH = 256
-STR_DISPLAY_LENGTH = 30
 
 
 class PublishedModel(models.Model):
@@ -98,6 +101,9 @@ class Post(PublishedModel):
     def __str__(self):
         return self.title[:STR_DISPLAY_LENGTH]
 
+    def get_absolute_url(self):
+        return reverse('blog:post_detail', args=(self.pk,))
+
 
 class Comment(models.Model):
     text = models.TextField('Текст комментария')
@@ -120,4 +126,7 @@ class Comment(models.Model):
         default_related_name = 'comments'
 
     def __str__(self):
-        return self.text[:STR_DISPLAY_LENGTH]
+        return (
+            f'Комментарий {self.author} к посту «{self.post}»: '
+            f'{self.text[:STR_DISPLAY_LENGTH]}'
+        )
